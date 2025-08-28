@@ -42,35 +42,16 @@ def fetch_latest_version(repo, latest=True):
     match = re.search(r"\d+\.\d+\.\d+", name)
     return match.group(0) if match else "unknown"
 
-def load_cache():
-    if not os.path.exists(CACHE_FILE):
-        return None
-    with open(CACHE_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    ts = datetime.fromisoformat(data["timestamp"])
-    if datetime.now() - ts > CACHE_TTL:
-        return None
-    return data
-
 def save_cache(versions):
-    data = {
-        "timestamp": datetime.now().isoformat(),
-        "versions": versions
-    }
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
+        json.dump(versions, f, indent=4)
 
 def main():
-    cache = load_cache()
-    if cache:
-        versions = cache["versions"]
-    else:
-        versions = {}
-        versions["nginx"] = fetch_latest_version(repos["nginx"], latest=True)
-        versions["php"] = fetch_latest_version(repos["php"], latest=False)
-        versions["mariadb"] = fetch_latest_version(repos["mariadb"], latest=False)
-        save_cache(versions)
-
+    versions = {}
+    versions["nginx"] = fetch_latest_version(repos["nginx"], latest=True)
+    versions["php"] = fetch_latest_version(repos["php"], latest=False)
+    versions["mariadb"] = fetch_latest_version(repos["mariadb"], latest=False)
+    save_cache(versions)
     print(json.dumps(versions, indent=4))
 
 if __name__ == "__main__":
