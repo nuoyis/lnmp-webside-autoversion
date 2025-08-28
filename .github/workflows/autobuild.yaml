@@ -1,0 +1,20 @@
+name: Autobuild Docker Images
+
+on:
+  workflow_dispatch:    # 可手动触发
+  push:
+    paths:
+      - 'versions.json' # 只在 versions.json 改动时触发
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger other repo workflow
+  uses: peter-evans/workflow-dispatch@v1
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}   # 需要对目标仓库有写权限的 Personal Access Token
+    repository: nuoyis/nuoyis-lnmp
+    workflow: 'autobuild.yaml'      # 目标仓库的 workflow 文件名
+    ref: dev
