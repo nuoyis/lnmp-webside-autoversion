@@ -48,9 +48,9 @@ def save_cache(versions):
 
 def main():
     versions = {}
-    versions["nginx"] = fetch_latest_version(repos["nginx"], latest=True)
-    versions["php"] = fetch_latest_version(repos["php"], latest=False)
-    versions["mariadb"] = fetch_latest_version(repos["mariadb"], latest=False)
+    versions["versions"]["nginx"] = fetch_latest_version(repos["nginx"], latest=True)
+    versions["versions"]["php"] = fetch_latest_version(repos["php"], latest=False)
+    versions["versions"]["mariadb"] = fetch_latest_version(repos["mariadb"], latest=False)
     save_cache(versions)
     print(json.dumps(versions, indent=4))
 
