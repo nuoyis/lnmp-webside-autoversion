@@ -12,9 +12,9 @@ jobs:
 
     steps:
       - name: Trigger other repo workflow
-  uses: peter-evans/workflow-dispatch@v1
-  with:
-    token: ${{ secrets.GITHUB_TOKEN }}   # 需要对目标仓库有写权限的 Personal Access Token
-    repository: nuoyis/nuoyis-lnmp
-    workflow: 'autobuild.yaml'      # 目标仓库的 workflow 文件名
-    ref: dev
+        uses: peter-evans/workflow-dispatch@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}   # 需要对目标仓库有写权限的 Personal Access Token
+          repository: nuoyis/nuoyis-lnmp
+          workflow: 'autobuild.yaml'      # 目标仓库的 workflow 文件名
+          ref: dev
