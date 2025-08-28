@@ -2,19 +2,20 @@ name: Update Versions JSON
 
 on:
   schedule:
-    # 每天凌晨 12 点运行（shanghai 时间）
-    - cron: '0 16 * * *'
-  workflow_dispatch: # 支持手动触发
+    - cron: '0 16 * * *'  # 每天 UTC 16 点，约等于北京时间 0 点
+  workflow_dispatch:
+  push:
+    paths:
+      - 'versions.json'  # 也可触发自身 workflow
+
+permissions:
+  contents: write
 
 jobs:
- update-versions:
+  update-versions:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -27,36 +28,22 @@ jobs:
           pip install requests beautifulsoup4
 
       - name: Run main.py
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x main.py
           ./main.py
 
-      - name: Commit updated JSON (only if changed)
-        id: commit
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit updated JSON if changed
+        id: commit_changes
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          
-          if git diff --quiet versions.json; then
-            echo "no_changes=true" >> $GITHUB_OUTPUT
-            echo "versions.json 没有变化，跳过提交。"
+          git add versions.json
+          if git diff --cached --quiet; then
+              echo "No version change detected, skipping commit."
+              echo "changed=false" >> $GITHUB_OUTPUT
           else
-            git add versions.json
-            git commit -m "Update versions.json"
-            git push
-            echo "no_changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create Tag (trigger build pipeline)
-        if: steps.commit.outputs.no_changes == 'false'
+              git commit -m "Update versions.json"
+              git push
+              echo "changed=true" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION=$(jq -r '.nginx.version + "-" + .php.version' versions.json)
-          echo "生成 tag: $VERSION"
-          git tag $VERSION
-          git push origin $VERSION
